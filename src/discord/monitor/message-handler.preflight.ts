@@ -486,11 +486,11 @@ export async function preflightDiscordMessage(
       if (shouldLogVerbose()) {
         logVerbose(
           `discord: drop guild message (mention required) - ` +
-          `botId=${botId ? "set" : "unset"}, ` +
-          `explicitMention=${explicitlyMentioned}, ` +
-          `patternMatch=${mentionRegexes.length > 0 && matchesMentionPatterns(baseText, mentionRegexes)}, ` +
-          `hasAnyMention=${hasAnyMention}, ` +
-          `implicitMention=${implicitMention}`,
+            `botId=${botId ? "set" : "unset"}, ` +
+            `explicitMention=${explicitlyMentioned}, ` +
+            `patternMatch=${mentionRegexes.length > 0 && matchesMentionPatterns(baseText, mentionRegexes)}, ` +
+            `hasAnyMention=${hasAnyMention}, ` +
+            `implicitMention=${implicitMention}`,
         );
       }
       logger.info(
