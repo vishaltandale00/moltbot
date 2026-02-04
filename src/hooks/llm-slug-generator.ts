@@ -14,6 +14,7 @@ import {
 } from "../agents/agent-scope.js";
 import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import { parseModelRef } from "../agents/model-selection.js";
+import { DEFAULT_PROVIDER } from "../agents/defaults.js";
 
 /**
  * Generate a short 1-2 word filename slug from session content using LLM
@@ -31,7 +32,9 @@ export async function generateSlugViaLLM(params: {
 
     // Resolve primary model from config to use configured model instead of hardcoded defaults
     const primaryModelRef = resolveAgentModelPrimary(params.cfg, agentId);
-    const parsedModel = primaryModelRef ? parseModelRef(primaryModelRef, "anthropic") : null;
+    const parsedModel = primaryModelRef
+      ? parseModelRef(primaryModelRef, DEFAULT_PROVIDER)
+      : null;
 
     // Create a temporary session file for this one-off LLM call
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-slug-"));
