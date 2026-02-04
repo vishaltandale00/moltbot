@@ -1,3 +1,4 @@
+import type { ModelProviderConfig } from "../config/types.models.js";
 import type { ApplyAuthChoiceParams, ApplyAuthChoiceResult } from "./auth-choice.apply.js";
 import { upsertAuthProfile } from "../agents/auth-profiles.js";
 import {
@@ -57,8 +58,9 @@ export async function applyAuthChoiceAnthropic(
     });
 
     // Also save token to config file as fallback for gateway
-    // Type cast is safe because normalizeProviders will fill in required fields
-    const existingAnthropic = nextConfig.models?.providers?.anthropic ?? ({} as any);
+    // Type cast is safe because normalizeProviders will fill in required fields like baseUrl and models
+    const existingAnthropic =
+      nextConfig.models?.providers?.anthropic ?? ({} as Partial<ModelProviderConfig>);
     nextConfig = {
       ...nextConfig,
       models: {
@@ -68,7 +70,7 @@ export async function applyAuthChoiceAnthropic(
           anthropic: {
             ...existingAnthropic,
             apiKey: token,
-          },
+          } as Partial<ModelProviderConfig>,
         },
       },
     };
@@ -120,8 +122,9 @@ export async function applyAuthChoiceAnthropic(
 
     // Also save API key to config file as fallback for gateway
     if (apiKey) {
-      // Type cast is safe because normalizeProviders will fill in required fields
-      const existingAnthropic = nextConfig.models?.providers?.anthropic ?? ({} as any);
+      // Type cast is safe because normalizeProviders will fill in required fields like baseUrl and models
+      const existingAnthropic =
+        nextConfig.models?.providers?.anthropic ?? ({} as Partial<ModelProviderConfig>);
       nextConfig = {
         ...nextConfig,
         models: {
@@ -131,7 +134,7 @@ export async function applyAuthChoiceAnthropic(
             anthropic: {
               ...existingAnthropic,
               apiKey,
-            },
+            } as Partial<ModelProviderConfig>,
           },
         },
       };
