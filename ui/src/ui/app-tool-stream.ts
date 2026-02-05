@@ -103,12 +103,26 @@ function sanitizeForDisplay(value: unknown): unknown {
     // Re-parse to ensure it's a clean copy
     return JSON.parse(str);
   } catch (err) {
-    // Circular reference or other serialization error
-    if (err instanceof Error && err.message.includes("circular")) {
-      return "[Circular reference]";
+    // Handle specific serialization errors with appropriate messages
+    if (err instanceof Error) {
+      if (err.message.includes("circular")) {
+        return "[Circular reference]";
+      }
+      if (err.message.includes("BigInt")) {
+        return "[Contains BigInt - not JSON serializable]";
+      }
     }
-    // Other errors - just return a placeholder
-    return "[Unable to display]";
+    // For other errors, attempt a lossy fallback via String() before giving up
+    try {
+      const fallback = String(value);
+      // Only use the string representation if it's reasonable size
+      if (fallback.length <= 100_000) {
+        return `[Non-JSON value: ${fallback.slice(0, 200)}${fallback.length > 200 ? "..." : ""}]`;
+      }
+      return `[Large non-JSON value: ${fallback.length} chars]`;
+    } catch {
+      return "[Unable to display]";
+    }
   }
 }
 
@@ -300,22 +314,26 @@ export function handleAgentEvent(host: ToolStreamHost, payload?: AgentEventPaylo
   } catch (err) {
     console.error("[tool-stream] buildToolStreamMessage failed:", err);
     // Create a minimal error message to prevent UI breakage
+    // Only include toolresult if there's actual output (not for start/update phases)
+    const content: Array<Record<string, unknown>> = [
+      {
+        type: "toolcall",
+        name: entry.name,
+        arguments: {},
+      },
+    ];
+    if (entry.output) {
+      content.push({
+        type: "toolresult",
+        name: entry.name,
+        text: "[Error displaying tool result]",
+      });
+    }
     entry.message = {
       role: "assistant",
       toolCallId: entry.toolCallId,
       runId: entry.runId,
-      content: [
-        {
-          type: "toolcall",
-          name: entry.name,
-          arguments: {},
-        },
-        {
-          type: "toolresult",
-          name: entry.name,
-          text: "[Error displaying tool result]",
-        },
-      ],
+      content,
       timestamp: entry.startedAt,
     };
   }
