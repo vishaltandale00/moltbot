@@ -58,6 +58,7 @@ export async function applyAuthChoiceAnthropic(
     });
 
     // Also save token to config file as fallback for gateway
+    // Type assertion is safe: normalizeProviders() will fill required fields later
     nextConfig = {
       ...nextConfig,
       models: {
@@ -67,7 +68,7 @@ export async function applyAuthChoiceAnthropic(
           anthropic: {
             ...(nextConfig.models?.providers?.anthropic || {}),
             apiKey: token,
-          },
+          } as ModelProviderConfig,
         },
       },
     };
@@ -118,6 +119,7 @@ export async function applyAuthChoiceAnthropic(
     });
 
     // Also save API key to config file as fallback for gateway
+    // Type assertion is safe: normalizeProviders() will fill required fields later
     if (apiKey) {
       nextConfig = {
         ...nextConfig,
@@ -128,7 +130,7 @@ export async function applyAuthChoiceAnthropic(
             anthropic: {
               ...(nextConfig.models?.providers?.anthropic || {}),
               apiKey,
-            },
+            } as ModelProviderConfig,
           },
         },
       };
