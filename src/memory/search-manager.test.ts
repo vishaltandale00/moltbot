@@ -52,6 +52,9 @@ beforeEach(() => {
   vi.mocked(MemoryIndexManager.get).mockClear();
   // eslint-disable-next-line @typescript-eslint/unbound-method
   vi.mocked(MemoryIndexManager.get).mockResolvedValue(null);
+  // Also reset the mock implementation for QmdMemoryManager.create
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  vi.mocked(QmdMemoryManager.create).mockResolvedValue(mockPrimary);
 });
 
 describe("getMemorySearchManager caching", () => {
