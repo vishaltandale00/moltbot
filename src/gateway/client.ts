@@ -85,7 +85,7 @@ export class GatewayClient {
   private lastSeq: number | null = null;
   private connectNonce: string | null = null;
   private connectSent = false;
-  private connectTimer: NodeJS.Timeout | null = null;
+  private connectTimer: NodeJS.Immediate | null = null;
   // Track last tick to detect silent stalls.
   private lastTick: number | null = null;
   private tickIntervalMs = 30_000;
@@ -347,7 +347,7 @@ export class GatewayClient {
     // the 750ms delay, as the challenge is handled separately via handleMessage().
     this.connectTimer = setImmediate(() => {
       this.sendConnect();
-    }) as unknown as ReturnType<typeof setTimeout>;
+    });
   }
 
   private scheduleReconnect() {
