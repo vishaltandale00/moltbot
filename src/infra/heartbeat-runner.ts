@@ -978,6 +978,8 @@ export function startHeartbeatRunner(opts: {
       } else {
         log.info("heartbeat: started", { intervalMs: Math.min(...intervals) });
       }
+      // Restart watchdog when heartbeat config changes between enabled/disabled
+      startWatchdog();
     }
 
     scheduleNext();
