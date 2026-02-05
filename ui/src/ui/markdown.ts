@@ -73,15 +73,25 @@ function installHooks() {
   hooksInstalled = true;
 
   DOMPurify.addHook("afterSanitizeAttributes", (node) => {
-    if (!(node instanceof HTMLAnchorElement)) {
+    // Handle anchor tags: force external links
+    if (node instanceof HTMLAnchorElement) {
+      const href = node.getAttribute("href");
+      if (href) {
+        node.setAttribute("rel", "noreferrer noopener");
+        node.setAttribute("target", "_blank");
+      }
       return;
     }
-    const href = node.getAttribute("href");
-    if (!href) {
-      return;
+
+    // Handle image tags: restrict to data: URLs only (for QR codes, base64 images)
+    // This prevents privacy leaks from tracking pixels and external image requests
+    if (node instanceof HTMLImageElement) {
+      const src = node.getAttribute("src");
+      if (src && !src.startsWith("data:")) {
+        // Remove the src attribute for non-data URLs to prevent loading
+        node.removeAttribute("src");
+      }
     }
-    node.setAttribute("rel", "noreferrer noopener");
-    node.setAttribute("target", "_blank");
   });
 }
 
