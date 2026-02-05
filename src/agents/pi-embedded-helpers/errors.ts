@@ -641,3 +641,82 @@ export function isFailoverAssistantError(msg: AssistantMessage | undefined): boo
   }
   return isFailoverErrorMessage(msg.errorMessage ?? "");
 }
+
+/**
+ * Detects transient network errors that should be retried
+ * Examples: TLS errors, ECONNRESET, ETIMEDOUT, DNS failures, socket errors
+ */
+export function isNetworkError(error: unknown): boolean {
+  if (!error) {
+    return false;
+  }
+
+  // Check error message
+  const errorMessage =
+    error instanceof Error ? error.message : typeof error === "string" ? error : String(error);
+
+  const lowerMessage = errorMessage.toLowerCase();
+
+  // TLS/SSL errors
+  if (
+    lowerMessage.includes("tls") ||
+    lowerMessage.includes("ssl") ||
+    lowerMessage.includes("setsession") ||
+    lowerMessage.includes("certificate")
+  ) {
+    return true;
+  }
+
+  // Socket errors
+  if (
+    lowerMessage.includes("socket") ||
+    lowerMessage.includes("econnreset") ||
+    lowerMessage.includes("econnrefused") ||
+    lowerMessage.includes("enotfound") ||
+    lowerMessage.includes("etimedout") ||
+    lowerMessage.includes("ehostunreach") ||
+    lowerMessage.includes("enetunreach") ||
+    lowerMessage.includes("epipe")
+  ) {
+    return true;
+  }
+
+  // DNS errors
+  if (
+    lowerMessage.includes("getaddrinfo") ||
+    lowerMessage.includes("dns") ||
+    lowerMessage.includes("eai_again")
+  ) {
+    return true;
+  }
+
+  // Connection errors
+  if (
+    lowerMessage.includes("connection reset") ||
+    lowerMessage.includes("connection closed") ||
+    lowerMessage.includes("connection refused") ||
+    lowerMessage.includes("network error") ||
+    lowerMessage.includes("fetch failed")
+  ) {
+    return true;
+  }
+
+  // Check error code (for Node.js system errors)
+  if (error && typeof error === "object") {
+    const code = (error as { code?: string }).code;
+    if (
+      code === "ECONNRESET" ||
+      code === "ECONNREFUSED" ||
+      code === "ETIMEDOUT" ||
+      code === "ENOTFOUND" ||
+      code === "EHOSTUNREACH" ||
+      code === "ENETUNREACH" ||
+      code === "EPIPE" ||
+      code === "EAI_AGAIN"
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
